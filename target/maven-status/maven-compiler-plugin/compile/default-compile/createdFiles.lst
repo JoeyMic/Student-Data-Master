@@ -1,0 +1,10 @@
+id\uas\studentapp\model\Student.class
+id\uas\studentapp\util\ReportGenerator.class
+id\uas\studentapp\util\DatabaseConnector.class
+id\uas\studentapp\ui\MainFrame$1.class
+id\uas\studentapp\dao\StudentDAO.class
+id\uas\studentapp\ui\MainFrame$3.class
+id\uas\studentapp\ui\MainFrame$2.class
+id\uas\studentapp\dao\IStudentDAO.class
+id\uas\studentapp\Main.class
+id\uas\studentapp\ui\MainFrame.class

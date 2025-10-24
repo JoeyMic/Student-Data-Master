@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport 
+    xmlns="http://jasperreports.sourceforge.net/jasperreports"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+                        http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+    name="student_report"
+    pageWidth="595"
+    pageHeight="842"
+    columnWidth="515"
+    leftMargin="40"
+    rightMargin="40"
+    topMargin="60"
+    bottomMargin="40"
+    uuid="e7c1c0c3-1e6b-43aa-992a-1b0f3d8f7a72">
+
+    <parameter name="FROM_ID" class="java.lang.Integer"/>
+    <parameter name="TO_ID" class="java.lang.Integer"/>
+    <parameter name="LOGO" class="java.io.InputStream"/>
+
+    <queryString>
+        <![CDATA[
+            SELECT student_id, name, email, major FROM students 
+            WHERE student_id BETWEEN $P{FROM_ID} AND $P{TO_ID}
+            ORDER BY student_id
+        ]]>
+    </queryString>
+
+    <field name="student_id" class="java.lang.Integer"/>
+    <field name="name" class="java.lang.String"/>
+    <field name="email" class="java.lang.String"/>
+    <field name="major" class="java.lang.String"/>
+
+    <!-- 🧾 Title -->
+    <title>
+        <band height="80">
+            <image>
+                <reportElement x="0" y="0" width="70" height="50"/>
+                <imageExpression><![CDATA[$P{LOGO}]]></imageExpression>
+            </image>
+
+            <staticText>
+                <reportElement x="90" y="0" width="400" height="30" forecolor="#2E4053"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Student Report]]></text>
+            </staticText>
+
+            <line>
+                <reportElement x="0" y="55" width="515" height="1" forecolor="#2E4053"/>
+            </line>
+        </band>
+    </title>
+
+    <!-- 🧩 Header -->
+    <columnHeader>
+        <band height="25">
+            <staticText>
+                <reportElement x="0" y="0" width="50" height="25" backcolor="#4F81BD" mode="Opaque" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[ID]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement x="50" y="0" width="200" height="25" backcolor="#4F81BD" mode="Opaque" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Name]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement x="250" y="0" width="200" height="25" backcolor="#4F81BD" mode="Opaque" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Email]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement x="450" y="0" width="65" height="25" backcolor="#4F81BD" mode="Opaque" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Major]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <!-- 📋 Detail -->
+    <detail>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="50" height="20" mode="Opaque" backcolor="#FFFFFF" forecolor="#000000"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{student_id}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="50" y="0" width="200" height="20" mode="Opaque" backcolor="#FFFFFF" forecolor="#000000"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="250" y="0" width="200" height="20" mode="Opaque" backcolor="#FFFFFF" forecolor="#000000"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="450" y="0" width="65" height="20" mode="Opaque" backcolor="#FFFFFF" forecolor="#000000"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{major}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <!-- 📄 Footer -->
+    <pageFooter>
+        <band height="25" splitType="Prevent">
+            <line>
+                <reportElement x="0" y="0" width="515" height="1" forecolor="#999999"/>
+            </line>
+
+            <textField>
+                <reportElement x="0" y="5" width="250" height="20" backcolor="#F2F2F2" mode="Opaque" forecolor="#333333"/>
+                <textElement verticalAlignment="Middle"><font size="10"/></textElement>
+                <textFieldExpression><![CDATA["Printed: " + new java.util.Date()]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="400" y="5" width="115" height="20" backcolor="#F2F2F2" mode="Opaque" forecolor="#333333"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="10"/></textElement>
+                <textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+</jasperReport>
