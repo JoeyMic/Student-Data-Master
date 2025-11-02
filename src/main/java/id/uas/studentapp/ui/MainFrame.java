@@ -6,6 +6,7 @@ import id.uas.studentapp.util.ReportGenerator;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -14,12 +15,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Random;
 
 /**
- * Simple Swing UI implementing the required features.
- * Note: replace resources/logo.png and resources/background.jpg with real images.
+ * Refreshed Swing UI for Student App (SQLite)
+ * Modernized layout and spacing
  */
 public class MainFrame extends JFrame {
     private final IStudentDAO dao;
@@ -30,8 +30,8 @@ public class MainFrame extends JFrame {
 
     public MainFrame(IStudentDAO dao) {
         this.dao = dao;
-        setTitle("Student Management App - UAS (SQLite)");
-        setSize(900, 600);
+        setTitle("Student Data Management");
+        setSize(950, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -42,122 +42,160 @@ public class MainFrame extends JFrame {
     }
 
     private void initUI() {
-        setContentPane(new JPanel() {
+        // Background panel with image
+        setContentPane(new JPanel(new BorderLayout()) {
             private BufferedImage bg;
             {
                 try {
                     bg = ImageIO.read(getClass().getResource("/background.jpg"));
                 } catch (Exception e) { bg = null; }
-                setLayout(new BorderLayout());
             }
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                if (bg != null) {
+                if (bg != null)
                     g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
-                }
+                // overlay light transparent white
+                g.setColor(new Color(255, 255, 255, 180));
+                g.fillRect(0, 0, getWidth(), getHeight());
             }
         });
 
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setOpaque(false);
+        // === LEFT FORM PANEL ===
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setOpaque(false);
+        formPanel.setBorder(BorderFactory.createTitledBorder(
+                new LineBorder(Color.GRAY, 1, true),
+                "Student Information",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 14)
+        ));
+
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(4,4,4,4);
+        c.insets = new Insets(6, 6, 6, 6);
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
 
-        tfId = new JTextField(5); tfId.setEditable(false);
-        tfName = new JTextField(15);
-        tfEmail = new JTextField(15);
-        tfMajor = new JTextField(10);
+        tfId = new JTextField(); tfId.setEditable(false);
+        tfName = new JTextField();
+        tfEmail = new JTextField();
+        tfMajor = new JTextField();
 
-        c.gridx = 0; c.gridy = 0; form.add(new JLabel("ID"), c);
-        c.gridx = 1; form.add(tfId, c);
-        c.gridx = 2; form.add(new JLabel("Name"), c);
-        c.gridx = 3; form.add(tfName, c);
-        c.gridx = 4; form.add(new JLabel("Email"), c);
-        c.gridx = 5; form.add(tfEmail, c);
-        c.gridx = 6; form.add(new JLabel("Major"), c);
-        c.gridx = 7; form.add(tfMajor, c);
+        addField(formPanel, c, "ID:", tfId, 0);
+        addField(formPanel, c, "Name:", tfName, 1);
+        addField(formPanel, c, "Email:", tfEmail, 2);
+        addField(formPanel, c, "Major:", tfMajor, 3);
+
+        // === BUTTON PANEL ===
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 3, 10, 10));
+        buttonPanel.setOpaque(false);
+        buttonPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
 
         JButton btnAdd = new JButton("Add");
         JButton btnUpdate = new JButton("Update");
         JButton btnDelete = new JButton("Delete");
         JButton btnSwap = new JButton("Swap Emails");
         JButton btnReport = new JButton("Generate Report");
+        JButton btnClear = new JButton("Clear Form");
 
-        JPanel btnPanel = new JPanel();
-        btnPanel.setOpaque(false);
-        btnPanel.add(btnAdd); btnPanel.add(btnUpdate); btnPanel.add(btnDelete); btnPanel.add(btnSwap); btnPanel.add(btnReport);
+        Font btnFont = new Font("Segoe UI", Font.PLAIN, 13);
+        for (JButton b : new JButton[]{btnAdd, btnUpdate, btnDelete, btnSwap, btnReport, btnClear}) {
+            b.setFont(btnFont);
+            b.setFocusPainted(false);
+            b.setBackground(new Color(230, 240, 250));
+            b.setBorder(new LineBorder(new Color(180, 200, 220)));
+        }
 
-        JPanel top = new JPanel(new BorderLayout());
-        top.setOpaque(false);
-        top.add(form, BorderLayout.CENTER);
-        top.add(btnPanel, BorderLayout.SOUTH);
+        buttonPanel.add(btnAdd);
+        buttonPanel.add(btnUpdate);
+        buttonPanel.add(btnDelete);
+        buttonPanel.add(btnSwap);
+        buttonPanel.add(btnReport);
+        buttonPanel.add(btnClear);
 
-        add(top, BorderLayout.NORTH);
+        JPanel leftPanel = new JPanel(new BorderLayout(10, 10));
+        leftPanel.setOpaque(false);
+        leftPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        leftPanel.add(formPanel, BorderLayout.CENTER);
+        leftPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        tableModel = new DefaultTableModel(new Object[]{"ID","Name","Email","Major"}, 0) {
+        // === RIGHT TABLE PANEL ===
+        tableModel = new DefaultTableModel(new Object[]{"ID", "Name", "Email", "Major"}, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
         };
         table = new JTable(tableModel);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setRowHeight(28);
+        table.setRowHeight(26);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.setSelectionBackground(new Color(200, 220, 255));
+
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            private final Random rand = new Random();
             @Override
-            public Component getTableCellRendererComponent(JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int col) {
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus,
+                                                           int row, int col) {
                 Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
                 if (!isSelected) {
-                    if (row % 2 == 0) comp.setBackground(new Color(245,245,255));
-                    else comp.setBackground(new Color(255,250,240));
-                } else comp.setBackground(new Color(200,220,255));
+                    comp.setBackground(row % 2 == 0 ? new Color(245, 250, 255) : new Color(255, 255, 240));
+                }
                 return comp;
             }
         });
 
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane tableScroll = new JScrollPane(table);
+        tableScroll.setBorder(BorderFactory.createTitledBorder(
+                new LineBorder(Color.GRAY, 1, true),
+                "Student Records",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 14)
+        ));
 
+        add(leftPanel, BorderLayout.WEST);
+        add(tableScroll, BorderLayout.CENTER);
+
+        // === EVENT HANDLERS ===
         btnAdd.addActionListener(e -> {
             Student s = new Student();
             s.setName(tfName.getText().trim());
             s.setEmail(tfEmail.getText().trim());
             s.setMajor(tfMajor.getText().trim());
             if (s.getName().isEmpty() || s.getEmail().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Name and email required");
+                JOptionPane.showMessageDialog(this, "Name and Email required");
                 return;
             }
-            boolean ok = dao.addStudent(s);
-            if (ok) {
+            if (dao.addStudent(s)) {
                 loadTable();
                 capture("add_student");
-                JOptionPane.showMessageDialog(this, "Student added successfully!");
                 clearForm();
+                JOptionPane.showMessageDialog(this, "Student added successfully!");
             } else JOptionPane.showMessageDialog(this, "Failed to add student");
         });
 
         btnUpdate.addActionListener(e -> {
             int selected = table.getSelectedRow();
-            if (selected < 0) { JOptionPane.showMessageDialog(this, "Select a row"); return; }
-            int id = (Integer)tableModel.getValueAt(selected, 0);
+            if (selected < 0) { JOptionPane.showMessageDialog(this, "Select a row first"); return; }
+            int id = (Integer) tableModel.getValueAt(selected, 0);
             Student s = new Student(id, tfName.getText().trim(), tfEmail.getText().trim(), tfMajor.getText().trim());
-            boolean ok = dao.updateStudent(s);
-            if (ok) {
+            if (dao.updateStudent(s)) {
                 loadTable();
                 capture("update_student");
-                JOptionPane.showMessageDialog(this, "Updated!");
+                JOptionPane.showMessageDialog(this, "Updated successfully!");
             } else JOptionPane.showMessageDialog(this, "Update failed");
         });
 
         btnDelete.addActionListener(e -> {
             int selected = table.getSelectedRow();
             if (selected < 0) { JOptionPane.showMessageDialog(this, "Select a row"); return; }
-            int id = (Integer)tableModel.getValueAt(selected, 0);
-            int conf = JOptionPane.showConfirmDialog(this, "Delete student id "+id+"?");
-            if (conf == JOptionPane.YES_OPTION) {
-                boolean ok = dao.deleteStudent(id);
-                if (ok) {
+            int id = (Integer) tableModel.getValueAt(selected, 0);
+            if (JOptionPane.showConfirmDialog(this, "Delete student ID " + id + "?", "Confirm", JOptionPane.YES_NO_OPTION)
+                    == JOptionPane.YES_OPTION) {
+                if (dao.deleteStudent(id)) {
                     loadTable();
                     capture("delete_student");
-                    JOptionPane.showMessageDialog(this, "Deleted!");
+                    JOptionPane.showMessageDialog(this, "Deleted successfully!");
                 } else JOptionPane.showMessageDialog(this, "Delete failed");
             }
         });
@@ -168,11 +206,10 @@ public class MainFrame extends JFrame {
             try {
                 int idA = Integer.parseInt(a.trim());
                 int idB = Integer.parseInt(b.trim());
-                boolean ok = dao.swapStudentEmails(idA, idB);
-                if (ok) {
+                if (dao.swapStudentEmails(idA, idB)) {
                     loadTable();
                     capture("swap_emails");
-                    JOptionPane.showMessageDialog(this, "Swap successful (transactional)");
+                    JOptionPane.showMessageDialog(this, "Emails swapped successfully!");
                 } else JOptionPane.showMessageDialog(this, "Swap failed");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Invalid IDs");
@@ -186,8 +223,7 @@ public class MainFrame extends JFrame {
                 int fromId = Integer.parseInt(from.trim());
                 int toId = Integer.parseInt(to.trim());
                 String out = "report/student_report.pdf";
-                boolean ok = ReportGenerator.generateReport(fromId, toId, out);
-                if (ok) {
+                if (ReportGenerator.generateReport(fromId, toId, out)) {
                     capture("report_generated");
                     JOptionPane.showMessageDialog(this, "Report saved to " + out);
                 } else JOptionPane.showMessageDialog(this, "Report generation failed");
@@ -196,27 +232,35 @@ public class MainFrame extends JFrame {
             }
         });
 
+        btnClear.addActionListener(e -> clearForm());
+
         table.getSelectionModel().addListSelectionListener(e -> {
             int sel = table.getSelectedRow();
             if (sel >= 0) {
-                tfId.setText(tableModel.getValueAt(sel,0).toString());
-                tfName.setText((String)tableModel.getValueAt(sel,1));
-                tfEmail.setText((String)tableModel.getValueAt(sel,2));
-                tfMajor.setText((String)tableModel.getValueAt(sel,3));
+                tfId.setText(tableModel.getValueAt(sel, 0).toString());
+                tfName.setText((String) tableModel.getValueAt(sel, 1));
+                tfEmail.setText((String) tableModel.getValueAt(sel, 2));
+                tfMajor.setText((String) tableModel.getValueAt(sel, 3));
             }
         });
+    }
+
+    private void addField(JPanel panel, GridBagConstraints c, String label, JTextField field, int row) {
+        c.gridx = 0; c.gridy = row;
+        panel.add(new JLabel(label), c);
+        c.gridx = 1;
+        panel.add(field, c);
     }
 
     private void loadTable() {
         java.util.List<Student> list = dao.getAllStudents();
         tableModel.setRowCount(0);
-        for (Student s : list) {
+        for (Student s : list)
             tableModel.addRow(new Object[]{s.getStudentId(), s.getName(), s.getEmail(), s.getMajor()});
-        }
     }
 
     private void clearForm() {
-        tfId.setText(""); tfName.setText(""); tfEmail.setText(""); tfMajor.setText(""); 
+        tfId.setText(""); tfName.setText(""); tfEmail.setText(""); tfMajor.setText("");
     }
 
     private void capture(String namePrefix) {
@@ -230,7 +274,7 @@ public class MainFrame extends JFrame {
             String stamp = LocalDateTime.now().format(f);
             File out = new File(captureDir, namePrefix + "_" + stamp + ".png");
             ImageIO.write(img, "png", out);
-            System.out.println("Captured: "+out.getAbsolutePath());
+            System.out.println("Captured: " + out.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();
         }
